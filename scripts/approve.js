@@ -4,7 +4,7 @@ const { ethers } = require('hardhat');
 const IERC20 = require('../artifacts/@openzeppelin/contracts/token/ERC20/IERC20.sol/IERC20.json')
 const Swapper = require('../artifacts/contracts/swapper.sol/Swapper.json')
 
-async function main() {
+async function approve() {
     const [signer] = await ethers.getSigners();
 
     const deployedAddress = process.env.DEPLOYED_ADDRESS || "";
@@ -16,6 +16,10 @@ async function main() {
     const approvalAmount = ethers.parseUnits('5', 18)
     const tx = await srcContract.approve(deployedContract, approvalAmount);
     console.log('approvalTx Hash:', tx.hash);
+}
+
+async function main() {
+    await approve()
 }
 
 main()

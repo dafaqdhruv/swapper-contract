@@ -9,7 +9,7 @@ import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 
 contract Swapper {
-    ISwapRouter private constant UNISWAP_V3_ROUTER_02 = ISwapRouter(0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45);
+    ISwapRouter private constant UNISWAP_V3_ROUTER = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
     address private constant WETH9 = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
     event Withdrawal(uint amount, uint when);
@@ -24,11 +24,11 @@ contract Swapper {
     )   internal
         returns (uint256 amountOut)
     {
-        // Check token balance
-        IERC20 TokenA = IERC20(_fromToken);
-        require(TokenA.balanceOf(_recipient) >= _amount, "Insufficient WETH9 Balance");
+        console.log("Swapping via WETH9");
 
-        // Transfer tokens to self
+        IERC20 TokenA = IERC20(_fromToken);
+        require(TokenA.balanceOf(_recipient) >= _amount, "Insufficient SrcToken Balance");
+
         TransferHelper.safeTransferFrom(
             _fromToken,
             _recipient,
@@ -36,14 +36,11 @@ contract Swapper {
             _amount
         );
 
-        // Approve Token
-        TransferHelper.safeApprove(_fromToken, address(UNISWAP_V3_ROUTER_02), _amount);
+        TransferHelper.safeApprove(_fromToken, address(UNISWAP_V3_ROUTER), _amount);
 
-        bytes memory path = abi.encodePacked(
-            _fromToken, WETH9, _toToken
-        );
+        uint24 poolFee = 3000;
+        bytes memory path = abi.encodePacked (_fromToken, poolFee, WETH9, poolFee, _toToken);
 
-        // Swap
         ISwapRouter.ExactInputParams memory params = ISwapRouter
             .ExactInputParams({
                 path: path,
@@ -53,7 +50,7 @@ contract Swapper {
                 amountOutMinimum: 1
             });
 
-        amountOut = UNISWAP_V3_ROUTER_02.exactInput(params);
+        amountOut = UNISWAP_V3_ROUTER.exactInput(params);
         console.log("amount out of Token is: ", amountOut);
     }
 
@@ -80,7 +77,7 @@ contract Swapper {
         console.log("Transfer Successful");
 
         // Approve Token
-        TransferHelper.safeApprove(_fromToken, address(UNISWAP_V3_ROUTER_02), _amount);
+        TransferHelper.safeApprove(_fromToken, address(UNISWAP_V3_ROUTER), _amount);
         console.log("Approval Successful");
 
         // Swap
@@ -96,8 +93,8 @@ contract Swapper {
                 sqrtPriceLimitX96: 0
             });
 
-        amountOut = UNISWAP_V3_ROUTER_02.exactInputSingle(params);
-        console.log("amount out of Token is: ", amountOut);
+        amountOut = UNISWAP_V3_ROUTER.exactInputSingle(params);
+        console.log("amount out of Token : ", amountOut);
     }
 
     function swap (

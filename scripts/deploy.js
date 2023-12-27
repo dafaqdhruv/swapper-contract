@@ -6,13 +6,17 @@
 // global scope, and execute the script.
 const hre = require("hardhat");
 
-async function main() {
+async function deployContract(){
   const swapper = await hre.ethers.deployContract("Swapper");
   await swapper.waitForDeployment();
 
   console.log(
     `Swapper deployed to ${swapper.target}`
   );
+}
+
+async function main() {
+  await deployContract();
 }
 
 // We recommend this pattern to be able to use async/await everywhere

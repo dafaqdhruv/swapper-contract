@@ -6,7 +6,7 @@ require('dotenv').config()
 const { abi } = require('../artifacts/contracts/swapper.sol/Swapper.json')
 const JSBI = require("jsbi");
 
-async function main() {
+async function swap() {
     const [signer] = await ethers.getSigners();
 
     const deployedAddress = process.env.DEPLOYED_ADDRESS || "";
@@ -20,7 +20,11 @@ async function main() {
 
     console.log("Swapping %s %s Tokens with %s using contract at %s", amountWei, srcToken, targetToken, deployedAddress)
     const tx = await Swapper.swap(amountWei, srcToken, targetToken);
-    console.log('Tx Hash:', tx.hash);
+    return tx;
+}
+
+async function main() {
+    await swap();
 }
 
 main()
